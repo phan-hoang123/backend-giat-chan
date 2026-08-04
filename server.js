@@ -98,10 +98,12 @@ app.post("/api/login", (req, res) => {
       }
 
       res.json({
-        message: "Đăng nhập thành công!",
-        name: user.name,
-        phone: user.phone,
-      });
+            message: "Đăng nhập thành công",
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            role: user.role 
+        });
     },
   );
 });
