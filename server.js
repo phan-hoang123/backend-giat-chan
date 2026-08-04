@@ -201,6 +201,31 @@ app.post("/api/transactions", (req, res) => {
   });
 });
 
+// ==========================================
+// TÍNH NĂNG: KIỂM KHO (INVENTORY)
+// ==========================================
+
+// 1. API Lấy danh sách vật tư
+app.get("/api/inventory", (req, res) => {
+  const sql = "SELECT * FROM inventory";
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: "Lỗi lấy dữ liệu kho" });
+    res.json(results);
+  });
+});
+
+// 2. API Nhập kho (Cộng thêm số lượng vào vật tư đã có)
+app.put("/api/inventory/:id/restock", (req, res) => {
+  const itemId = req.params.id;
+  const { added_amount } = req.body; // Số lượng nhập thêm
+  
+  const sql = "UPDATE inventory SET stock = stock + ? WHERE id = ?";
+  db.query(sql, [added_amount, itemId], (err, result) => {
+    if (err) return res.status(500).json({ error: "Lỗi cập nhật kho" });
+    res.json({ message: "Đã nhập kho thành công!" });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server Backend đang mở cửa tại Cổng ${PORT}`);
 });
