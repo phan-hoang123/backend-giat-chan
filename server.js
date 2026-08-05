@@ -255,6 +255,59 @@ app.put("/api/inventory/:id/consume", (req, res) => {
   });
 });
 
+// ==========================================
+// API BẢNG GIÁ & NHÂN SỰ (CHẠY THẬT)
+// ==========================================
+
+// Lấy bảng giá
+app.get("/api/prices", (req, res) => {
+  db.query("SELECT * FROM prices", (err, results) => {
+    if (err) return res.status(500).json({ error: "Lỗi" });
+    // Nếu db trống, trả về mảng mặc định để app không bị sập
+    if (results.length === 0) {
+      return res.json([
+        { id: 1, name: "Chăn to (Khách lẻ)", price: "35000" },
+        { id: 2, name: "Chăn nhỏ (Khách lẻ)", price: "25000" }
+      ]);
+    }
+    res.json(results);
+  });
+});
+
+// Lưu toàn bộ bảng giá mới
+app.put("/api/prices", (req, res) => {
+  const { prices } = req.body; // App sẽ gửi lên 1 mảng các giá mới
+  // Xóa bảng giá cũ, lưu bảng giá mới (Cách làm tắt cho nhanh)
+  db.query("TRUNCATE TABLE prices", () => {
+    const values = prices.map(p => [p.name, p.price]);
+    if (values.length > 0) {
+      db.query("INSERT INTO prices (name, price) VALUES ?", [values], (err) => {
+        if (err) return res.status(500).json({ error: "Lỗi lưu giá" });
+        res.json({ message: "Đã cập nhật bảng giá!" });
+      });
+    } else {
+      res.json({ message: "Bảng giá trống!" });
+    }
+  });
+});
+
+// Lấy danh sách nhân viên
+app.get("/api/staff", (req, res) => {
+  db.query("SELECT * FROM staff", (err, results) => {
+    if (err) return res.status(500).json({ error: "Lỗi" });
+    res.json(results);
+  });
+});
+
+// Đổi trạng thái Đang làm / Đã nghỉ của nhân viên
+app.put("/api/staff/:id/toggle", (req, res) => {
+  const staffId = req.params.id;
+  db.query("UPDATE staff SET active = NOT active WHERE id = ?", [staffId], (err) => {
+    if (err) return res.status(500).json({ error: "Lỗi" });
+    res.json({ message: "Đã chuyển trạng thái nhân sự!" });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server Backend đang mở cửa tại Cổng ${PORT}`);
 });
