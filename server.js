@@ -226,6 +226,22 @@ app.put("/api/inventory/:id/restock", (req, res) => {
   });
 });
 
+// 3. API Khai báo đồ mới (Tự động thêm khi quét mã lạ)
+app.post("/api/inventory", (req, res) => {
+  // Lấy thông tin app gửi lên
+  const { name, min_stock, unit, barcode } = req.body;
+  
+  // Mặc định đồ mới quét vào thì số lượng (stock) khởi điểm là 1, màu ngẫu nhiên cho đẹp
+  const initialStock = 1; 
+  const randomColor = "#" + Math.floor(Math.random()*16777215).toString(16);
+
+  const sql = "INSERT INTO inventory (name, stock, min_stock, unit, color, barcode) VALUES (?, ?, ?, ?, ?, ?)";
+  db.query(sql, [name, initialStock, min_stock, unit, randomColor, barcode], (err, result) => {
+    if (err) return res.status(500).json({ error: "Lỗi thêm đồ mới" });
+    res.json({ message: "Đã thêm thành công!", id: result.insertId });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server Backend đang mở cửa tại Cổng ${PORT}`);
 });
